@@ -27,24 +27,36 @@ grid_dict = {}
 acc_dict = {}
 time_dict = {}
 
-# Dropping residual sugar
-white_wine = white_wine.drop('residual sugar', axis=1)
+# Dropping total sulfur dioxide for white
+white_wine = white_wine.drop('total sulfur dioxide', axis=1)
+# Dropping free sulfur dioxide for red
+red_wine = red_wine.drop('free sulfur dioxide', axis=1)
+
+red_wine["Wine"] = "RED"
+white_wine["Wine"] = "WHITE"
+
+wines = pd.merge(white_wine, red_wine, how='outer')
+X_wines = wines.drop('quality', axis=1)
+y_wines = wines['quality']
+
+red_wine = red_wine.drop('Wine', axis=1)
+white_wine = white_wine.drop('Wine', axis=1)
+
 # Assigning X to data and y to target
 y_white = white_wine['quality']
 X_white = white_wine.drop('quality', axis=1)
-
-# Dropping residual sugar
-red_wine = white_wine.drop('residual sugar', axis=1)
-# Assigning X to data and y to target
+# Assigning X to data and y to target for red
 y_red = red_wine['quality']
 X_red = red_wine.drop('quality', axis=1)
 
-# Splitting the data into training and test set with a 3:1 ratio
 # White
 X_train_white, X_test_white, y_train_white, y_test_white = train_test_split(X_white, y_white, test_size=0.25, stratify=y_white, random_state=42)
 
 # Red
 X_train_red, X_test_red, y_train_red, y_test_red = train_test_split(X_red, y_red, test_size=0.25, stratify=y_red, random_state=42)
+
+# Both
+X_train, X_test, y_train, y_test = train_test_split(X_wines, y_wines, test_size=0.25, stratify=y_wines, random_state=42)
 
 # Normalizing the data
 # White
@@ -60,7 +72,7 @@ X_test_red = std_red.transform(X_test_red)
 # K Nearest Neighbour Classifier
 start_time_white = time.time()
 knn = KNeighborsClassifier()
-knn.fit(y_train_white, y_train_white)
+knn.fit(X_train_white, y_train_white)
 # Accuracy for pre GridSearchCV classifier
 knn_acc1 = accuracy_score(y_test_white, knn.predict(X_test_white))
 # Parameters for GridSearchCV
